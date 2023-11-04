@@ -133,3 +133,6 @@ _dataset
 
 *.csv
 *.parquet
+
+.idea
+.vscode

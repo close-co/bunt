@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Bunt Tag Module",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/bunt/cli/__init__.py",  // Replace with the actual path to your Python script
+        "args": ["tag", "--dataset-path=/Users/valentinafeve/Datasets/28Oct_cropped/"],
+        "cwd": "${workspaceFolder}",
+        "console": "integratedTerminal",
+        "env": {},
+        "stopOnEntry": false,
+        "pythonPath": "/Users/valentinafeve/.venvs/close/bin/python"  // Use the appropriate Python interpreter if needed
+      }
+    ]
+  }
+  

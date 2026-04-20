@@ -136,3 +136,6 @@ _dataset
 
 .idea
 .vscode
+
+
+__pycache__/

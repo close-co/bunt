@@ -6,7 +6,8 @@ import extcolors
 import pandas as pd
 from PIL import Image
 from tqdm import tqdm
-from colors.utils import get_images, rgb_to_hex
+
+from bunt.colors.utils import get_images, rgb_to_hex
 
 logger = logging.getLogger("close")
 logging.basicConfig(level=logging.INFO)
@@ -58,35 +59,38 @@ def cli():
 
 
 @cli.command()
-@click.option('--dataset-path', default='Dataset', help='File path where the dataset that is gonna be tagged is located')
-def tag(dataset_path):
-    df = pd.read_parquet(dataset_path+"/products.parquet").drop_duplicates(subset=['product_id']).set_index('product_id')
-    df = df.drop(['primary_color'], axis=1, errors='ignore')
-    df = df.drop(['occurence'], axis=1, errors='ignore')
-    df_products = pd.DataFrame()
-    for image, filename, root in tqdm(get_images(os.path.join(dataset_path, 'images'))):
-        width, height = image.size
-        crop_size = (int(width * CROP_BORDER_SIZE), int(height * CROP_BORDER_SIZE), int(width * 1-CROP_BORDER_SIZE), int(height * 1-CROP_BORDER_SIZE))
-        image = image.crop(crop_size)
+@click.option('--dataset-input-path', default='Dataset', help='File path where the dataset that is gonna be tagged is located')
+def tag(dataset_input_path):
+    df_products = pd.read_parquet(os.path.join(dataset_input_path, 'products.parquet'))
+    
+    # Backup dataset
+    df_products.to_parquet(os.path.join(dataset_input_path, 'products_backup.parquet'))
+    
+    images_folder = os.path.join(dataset_input_path, 'images')
 
-        path_as_array = root.split(os.sep)
-        product_id = path_as_array[-1]
+    logger.info(f"Segmenting images in dataset: {dataset_input_path}")
+    # N products found
+    logger.info(f"Found {len(df_products)} products in products.parquet")
 
-        image = resize(image)
-        extracted_colors = extcolors.extract_from_image(image, tolerance=TOLERANCE, limit=LIMIT)
-        df_product_colors = colors_to_df(extracted_colors)
-        df_product_colors = df_product_colors[df_product_colors['occurence'] == df_product_colors['occurence'].max()]
-        df_product_colors['product_id'] = product_id
+    # List all the folder in folder images
+    # tqdm for progress bar
+    for folder_product in tqdm(os.listdir(images_folder), desc="Processing folders"):
+        folder_path = os.path.join(images_folder, folder_product)
+        if os.path.isdir(folder_path):
+            for image_name in os.listdir(folder_path):
+                image_path = os.path.join(folder_path, image_name)
+                image = Image.open(image_path).convert("RGB")
 
-        df_products = pd.concat([df_products, df_product_colors])
+                extracted_colors = extcolors.extract_from_image(image, tolerance=TOLERANCE, limit=LIMIT)
+                df_product_colors = colors_to_df(extracted_colors)
+                df_product_colors = df_product_colors[df_product_colors['occurence'] == df_product_colors['occurence'].max()]
+                product_id = folder_product
+                df_products.loc[df_products['product_id'] == product_id, df_product_colors.columns] = df_product_colors.iloc[0].values
 
-    df_products = df_products.set_index('product_id')
-    df = df.join(df_products, on='product_id').reset_index()
-    tagged_products_percentage = (~df['primary_color'].isna()).sum() / len(df)
+    tagged_products_percentage = (~df_products['primary_color'].isna()).sum() / len(df_products)
     logger.info(f"{tagged_products_percentage*100}% of products were tagged")
-    df = df.where(pd.notnull(df), None)
-    df.to_parquet(dataset_path+"/products.parquet")
 
+    df_products.to_parquet(os.path.join(dataset_input_path, "products.parquet"))
 
 if __name__ == '__main__':
     cli()

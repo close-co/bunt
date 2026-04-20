@@ -1,18 +1,18 @@
 {
     "version": "0.2.0",
     "configurations": [
-      {
-        "name": "Bunt Tag Module",
-        "type": "python",
-        "request": "launch",
-        "program": "${workspaceFolder}/bunt/cli/__init__.py",  // Replace with the actual path to your Python script
-        "args": ["tag", "--dataset-path=/Users/valentinafeve/Datasets/28Oct_cropped/"],
-        "cwd": "${workspaceFolder}",
-        "console": "integratedTerminal",
-        "env": {},
-        "stopOnEntry": false,
-        "pythonPath": "/Users/valentinafeve/.venvs/close/bin/python"  // Use the appropriate Python interpreter if needed
-      }
+        {
+            "name": "bunt extrract colors",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "bunt.cli",
+            "args": [
+                "tag",
+                "--dataset-input-path", "dataset_2026_04_20_10_44_15_p_196_s_1",
+            ],
+            "cwd": "${workspaceFolder}",
+            "python": "${workspaceFolder}/venv/bin/python",
+            "justMyCode": true
+        }
     ]
-  }
-  
+}

@@ -66,7 +66,7 @@ def tag(dataset_input_path):
     # Backup dataset
     df_products.to_parquet(os.path.join(dataset_input_path, 'products_backup.parquet'))
     
-    images_folder = os.path.join(dataset_input_path, 'images')
+    images_folder = os.path.join(dataset_input_path, 'images-segmented')
 
     logger.info(f"Segmenting images in dataset: {dataset_input_path}")
     # N products found
